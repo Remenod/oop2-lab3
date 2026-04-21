@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <ranges>
+#include <algorithm>
 
 struct Button
 {
@@ -20,12 +22,39 @@ int create_buttons(size_t val_from, size_t val_to, size_t step)
     for (size_t i = val_from; i < val_to; i += step)
     {
         buttons.emplace_back(new Button{
+            already_pressed : false,
             value : i,
         });
     }
+    return 0;
 }
 
-int main()
+int remove_buttons(int n)
 {
+    std::erase_if(buttons, [n](int x)
+                  { return x % n == 0; });
+    return 0;
+}
+
+size_t check_is_prime(size_t number)
+{
+    if (number < 2)
+        return number;
+
+    if (number % 2 == 0)
+        return (number == 2 ? number : 2);
+
+    for (size_t i = 3; i * i <= number; i += 2)
+    {
+        if (number % i == 0)
+            return i;
+    }
+
+    return number;
+}
+
+int main(void)
+{
+
     return 0;
 }
