@@ -132,24 +132,43 @@ int main()
             {
                 ImGui::PushID(static_cast<int>(i));
 
+                bool pushed = false;
                 if (buttons[i].already_pressed)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
+                    pushed = true;
                 }
 
                 std::string label = std::to_string(buttons[i].value);
                 if (ImGui::Button(label.c_str(), ImVec2(60, 40)))
                 {
-                    buttons[i].already_pressed = !buttons[i].already_pressed;
+                    if (!buttons[i].already_pressed)
+                    {
+                        buttons[i].cached_divisor = check_is_prime(buttons[i].value);
+                        buttons[i].already_pressed = true;
+
+                        if (buttons[i].cached_divisor == buttons[i].value)
+                            std::cout << "[New] Value " << buttons[i].value << " is prime." << std::endl;
+                        else
+                            std::cout << "[New] Smallest divisor of " << buttons[i].value << " is " << buttons[i].cached_divisor << "." << std::endl;
+                    }
+                    else
+                    {
+                        if (buttons[i].cached_divisor == buttons[i].value)
+                            std::cout << "[Cached] Value " << buttons[i].value << " is prime." << std::endl;
+                        else
+                            std::cout << "[Cached] Smallest divisor of " << buttons[i].value << " is " << buttons[i].cached_divisor << "." << std::endl;
+                    }
                 }
 
-                if (buttons[i].already_pressed)
+                if (pushed)
                 {
-                    ImGui::PopStyleColor();
+                    ImGui::PopStyleColor(2);
                 }
 
                 float last_button_x2 = ImGui::GetItemRectMax().x;
-                float next_button_x2 = last_button_x2 + style.ItemSpacing.x + 60;
+                float next_button_x2 = last_button_x2 + ImGui::GetStyle().ItemSpacing.x + 60;
                 if (i + 1 < buttons.size() && next_button_x2 < window_visible_x2)
                 {
                     ImGui::SameLine();
