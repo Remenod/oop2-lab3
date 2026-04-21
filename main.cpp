@@ -17,6 +17,8 @@ struct Button
 };
 
 std::vector<Button> buttons;
+std::vector<std::string> action_logs;
+bool scroll_to_bottom = false;
 
 int create_buttons_logic(int val_from, int val_to, int step)
 {
@@ -104,6 +106,9 @@ int main()
         if (ImGui::Button("CREATE", ImVec2(100, 0)))
         {
             create_buttons_logic(from, to, step);
+            action_logs.push_back("[System] Created buttons from " + std::to_string(from) +
+                                  " to " + std::to_string(to) + " with step " + std::to_string(step));
+            scroll_to_bottom = true;
         }
 
         ImGui::Separator();
@@ -115,15 +120,18 @@ int main()
         if (ImGui::Button("ERASE", ImVec2(100, 0)))
         {
             remove_buttons_logic(erase_divisor);
+            action_logs.push_back("[System] Erased buttons divisible by " + std::to_string(erase_divisor));
+            scroll_to_bottom = true;
         }
 
         ImGui::Separator();
 
         ImGui::Text("Buttons (%zu):", buttons.size());
 
-        float child_height = ImGui::GetContentRegionAvail().y - 20.0f;
+        float available_y = ImGui::GetContentRegionAvail().y;
+        float buttons_area_height = available_y * 0.65f;
 
-        if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, child_height), true))
+        if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, buttons_area_height), true))
         {
             float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
             ImGuiStyle &style = ImGui::GetStyle();
@@ -143,23 +151,29 @@ int main()
                 std::string label = std::to_string(buttons[i].value);
                 if (ImGui::Button(label.c_str(), ImVec2(60, 40)))
                 {
+                    std::string log_message;
+
                     if (!buttons[i].already_pressed)
                     {
                         buttons[i].cached_divisor = check_is_prime(buttons[i].value);
                         buttons[i].already_pressed = true;
 
                         if (buttons[i].cached_divisor == buttons[i].value)
-                            std::cout << "[New] Value " << buttons[i].value << " is prime." << std::endl;
+                            log_message = "[New] Value " + std::to_string(buttons[i].value) + " is prime.";
                         else
-                            std::cout << "[New] Smallest divisor of " << buttons[i].value << " is " << buttons[i].cached_divisor << "." << std::endl;
+                            log_message = "[New] Smallest divisor of " + std::to_string(buttons[i].value) + " is " + std::to_string(buttons[i].cached_divisor) + ".";
                     }
                     else
                     {
                         if (buttons[i].cached_divisor == buttons[i].value)
-                            std::cout << "[Cached] Value " << buttons[i].value << " is prime." << std::endl;
+                            log_message = "[Cached] Value " + std::to_string(buttons[i].value) + " is prime.";
                         else
-                            std::cout << "[Cached] Smallest divisor of " << buttons[i].value << " is " << buttons[i].cached_divisor << "." << std::endl;
+                            log_message = "[Cached] Smallest divisor of " + std::to_string(buttons[i].value) + " is " + std::to_string(buttons[i].cached_divisor) + ".";
                     }
+
+                    action_logs.push_back(log_message);
+                    std::cout << log_message << std::endl;
+                    scroll_to_bottom = true;
                 }
 
                 if (pushed)
@@ -175,6 +189,24 @@ int main()
                 }
 
                 ImGui::PopID();
+            }
+        }
+        ImGui::EndChild();
+
+        ImGui::Separator();
+
+        ImGui::Text("Action Logs:");
+        if (ImGui::BeginChild("LogRegion", ImVec2(0, 0), true))
+        {
+            for (const auto &log : action_logs)
+            {
+                ImGui::TextUnformatted(log.c_str());
+            }
+
+            if (scroll_to_bottom)
+            {
+                ImGui::SetScrollHereY(1.0f);
+                scroll_to_bottom = false;
             }
         }
         ImGui::EndChild();
