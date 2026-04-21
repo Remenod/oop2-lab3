@@ -13,6 +13,7 @@ struct Button
 {
     bool already_pressed;
     int value;
+    int cached_divisor;
 };
 
 std::vector<Button> buttons;
@@ -22,15 +23,15 @@ int create_buttons_logic(int val_from, int val_to, int step)
     static const int max_buttons = 1000;
     if (val_from > val_to)
         return 1;
-    if ((val_to - val_from) / step > max_buttons)
+    if (step <= 0 || (val_to - val_from) / step > max_buttons)
         return 2;
 
-    for (int i = val_from; i < val_to; i += step)
+    for (int i = val_from; i <= val_to; i += step)
     {
-        buttons.emplace_back(new Button{
-            already_pressed : false,
-            value : i,
-        });
+        buttons.emplace_back(Button{
+            .already_pressed = false,
+            .value = i,
+            .cached_divisor = 0});
     }
     return 0;
 }
