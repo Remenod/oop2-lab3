@@ -22,10 +22,10 @@ bool scroll_to_bottom = false;
 
 int create_buttons_logic(int val_from, int val_to, int step)
 {
-    static const int max_buttons = 1000;
-    if (val_from > val_to)
+    static const int max_buttons = 10000;
+    if (step <= 0 || val_from > val_to)
         return 1;
-    if (step <= 0 || (val_to - val_from) / step > max_buttons)
+    if ((val_to - val_from) / step > max_buttons)
         return 2;
 
     for (int i = val_from; i <= val_to; i += step)
@@ -105,9 +105,20 @@ int main()
 
         if (ImGui::Button("CREATE", ImVec2(100, 0)))
         {
-            create_buttons_logic(from, to, step);
-            action_logs.push_back("[System] Created buttons from " + std::to_string(from) +
-                                  " to " + std::to_string(to) + " with step " + std::to_string(step));
+            int status = create_buttons_logic(from, to, step);
+            switch (status)
+            {
+            case 0:
+                action_logs.push_back("[System] Created buttons from " + std::to_string(from) +
+                                      " to " + std::to_string(to) + " with step " + std::to_string(step));
+                break;
+            case 1:
+                action_logs.push_back("[System] Invalid create config");
+                break;
+            case 2:
+                action_logs.push_back("[System] Too many buttons");
+                break;
+            }
             scroll_to_bottom = true;
         }
 
